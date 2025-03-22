@@ -8,7 +8,7 @@ app.use(cookieParser());
 
 const PORT = 3000;
 
-// Redirect to Google OAuth
+// Redirect user to Google OAuth
 app.get('/auth/google', (req, res) => {
   const googleAuthURL = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.GOOGLE_REDIRECT_URI}&response_type=code&scope=openid%20email%20profile&access_type=online&state=${req.hostname}`;
   res.redirect(googleAuthURL);
@@ -39,9 +39,9 @@ app.get('/google/callback', async (req, res) => {
 
     // Check if user exists in Shopify
     const { data: shopifyCustomers } = await axios.get(`${process.env.SHOPIFY_STORE_URL}/admin/api/2023-07/customers/search.json?query=email:${email}`, {
-      headers: {
-        "X-Shopify-Access-Token": process.env.SHOPIFY_ADMIN_API_TOKEN,
-        "Content-Type": "application/json",
+      auth: {
+        username: process.env.SHOPIFY_API_KEY,
+        password: process.env.SHOPIFY_API_PASSWORD,
       },
     });
 
@@ -62,9 +62,9 @@ app.get('/google/callback', async (req, res) => {
       };
 
       await axios.post(`${process.env.SHOPIFY_STORE_URL}/admin/api/2023-07/customers.json`, newCustomer, {
-        headers: {
-          "X-Shopify-Access-Token": process.env.SHOPIFY_ADMIN_API_TOKEN,
-          "Content-Type": "application/json",
+        auth: {
+          username: process.env.SHOPIFY_API_KEY,
+          password: process.env.SHOPIFY_API_PASSWORD,
         },
       });
 
