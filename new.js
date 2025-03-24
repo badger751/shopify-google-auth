@@ -9,7 +9,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // Allow dynamic port for Render
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 // Use environment variables for OAuth credentials
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -18,7 +19,7 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: 'http://localhost:3000/auth/google/callback'
+    callbackURL: `${BASE_URL}/auth/google/callback` // Use dynamic URL for Render
 }, (accessToken, refreshToken, profile, done) => {
     // Extract required user details
     const userData = {
@@ -27,10 +28,8 @@ passport.use(new GoogleStrategy({
         profilePic: profile.photos[0].value
     };
     
-    // Log user info to a text file
-    fs.appendFile('user_log.txt', JSON.stringify(userData) + '\n', (err) => {
-        if (err) console.error('Error logging user:', err);
-    });
+    // Log user info to the console (Render does not allow file writing)
+    console.log("User Logged In:", userData);
     
     return done(null, userData);
 }));
@@ -62,4 +61,5 @@ app.get('/auth/google/callback',
     }
 );
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    
